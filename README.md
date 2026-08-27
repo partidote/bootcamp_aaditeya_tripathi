@@ -49,3 +49,17 @@ Accurate pricing and sensitivity quantification are critical for active derivati
   * `notebooks/`: Exploratory data analysis, convergence tests, and valuation workflows.
   * `docs/`: Technical documentation, stakeholder memos, and project framing slides.
 * **Update Cadence:** Committed and pushed at each milestone following the course lifecycle stages.
+
+## Stage 06: Data Preprocessing Strategy & Assumptions
+
+### 1. Imputation Strategy (`fill_missing_median`)
+* **Mechanism:** Fills missing values in continuous numeric columns (`age`, `income`, `score`) using each column's calculated median[cite: 2, 3].
+* **Assumption:** Missingness is assumed to follow a Missing Completely at Random (MCAR) or Missing at Random (MAR) mechanism[cite: 3]. The median is preferred over the mean to provide robustness against skewness and extreme outliers[cite: 3].
+
+### 2. Filtering & Dropping Strategy (`drop_missing`)
+* **Mechanism:** Evaluates row completeness and drops records containing fewer non-null values than the required threshold (e.g., $\ge 70\%$ non-null columns)[cite: 2, 3].
+* **Tradeoff:** Sparse columns with high unobserved rates (`extra_data`) are eliminated to avoid introducing noisy imputation artifacts, trading a minor loss of observations for improved dataset integrity[cite: 2, 3].
+
+### 3. Feature Scaling & Normalization (`normalize_data`)
+* **Mechanism:** Maps numeric features to the interval $[0, 1]$ using `MinMaxScaler`[cite: 3].
+* **Assumption:** Assumes that observed minimums and maximums reflect true feature bounds[cite: 3]. This standardizes magnitude scales across disparate financial metrics, preventing scale-dominant attributes from distorting downstream modeling[cite: 3].
