@@ -45,7 +45,7 @@ Accurate pricing and sensitivity quantification are critical for active derivati
 ## Repo Plan
 * **Directory Structure:**
   * `data/`: Raw market downloads (`data/raw/`) and filtered options chains (`data/processed/`).
-  * `src/`: Modular code base including data loaders (`src/data_loader.py`), utility functions (`src/utils.py`), and pricing classes (`src/pricer.py`).
+  * `src/`: Modular code base including data loaders (`src/data_loader.py`), utility functions (`src/utils.py`), cleaning modules (`src/cleaning.py`), and pricing classes (`src/pricer.py`).
   * `notebooks/`: Exploratory data analysis, convergence tests, and valuation workflows.
   * `docs/`: Technical documentation, stakeholder memos, and project framing slides.
 * **Update Cadence:** Committed and pushed at each milestone following the course lifecycle stages.
@@ -73,13 +73,13 @@ Accurate pricing and sensitivity quantification are critical for active derivati
 ## Stage 06: Data Preprocessing Strategy & Assumptions
 
 ### 1. Imputation Strategy (`fill_missing_median`)
-* **Mechanism:** Fills missing values in continuous numeric columns (`age`, `income`, `score`) using each column's calculated median.
-* **Assumption:** Missingness is assumed to follow a Missing Completely at Random (MCAR) or Missing at Random (MAR) mechanism. The median is preferred over the mean to provide robustness against skewness and extreme outliers.
+* **Mechanism:** Fills missing values in continuous numeric columns using each column's calculated median.
+* **Assumption & Tradeoff:** Assumes missingness follows a Missing Completely at Random (MCAR) or Missing at Random (MAR) mechanism. In quantitative workflows (such as options order books with occasional missing quotes or sample demographic benchmarks), median imputation preserves central tendency without being skewed by heavy-tailed outliers or illiquid quote spikes.
 
 ### 2. Filtering & Dropping Strategy (`drop_missing`)
-* **Mechanism:** Evaluates row completeness and drops records containing fewer non-null values than the required threshold (e.g., $\ge 70\%$ non-null columns).
-* **Tradeoff:** Sparse columns with high unobserved rates (`extra_data`) are eliminated to avoid introducing noisy imputation artifacts, trading a minor loss of observations for improved dataset integrity.
+* **Mechanism:** Evaluates row and column completeness, dropping records that fall below a specified non-null threshold (e.g., rows containing fewer than 70% valid attributes) or dropping records with null primary keys.
+* **Tradeoff:** Sparse fields (e.g., auxiliary or unpopulated contract fields) are removed to prevent noise propagation and artificial variance injection, accepting a minor sample reduction in exchange for data integrity.
 
 ### 3. Feature Scaling & Normalization (`normalize_data`)
-* **Mechanism:** Maps numeric features to the interval $[0, 1]$ using `MinMaxScaler`.
-* **Assumption:** Assumes that observed minimums and maximums reflect true feature bounds. This standardizes magnitude scales across disparate financial metrics, preventing scale-dominant attributes from distorting downstream modeling.
+* **Mechanism:** Maps continuous numerical features to the interval $[0, 1]$ using `MinMaxScaler`, with fallback support for z-score standardization (`StandardScaler`).
+* **Assumption:** Assumes that empirical minimums and maximums reflect true representative boundaries. Scaling prevents high-magnitude features (such as volume or underlying spot levels) from dominating distance-based algorithms and gradient computations.
